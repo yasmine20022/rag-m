@@ -1,1 +1,2 @@
+*.pkl filter=lfs diff=lfs merge=lfs -text
 output1/embeddings_swimming.pkl filter=lfs diff=lfs merge=lfs -text
