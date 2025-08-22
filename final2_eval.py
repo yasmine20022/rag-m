@@ -795,9 +795,9 @@ class UltraOptimizedRAGEvaluator:
             
             # Global score with new weighting (focus on generation)
             overall_score = (
-                retrieve_score * 0.30 +    # Reduced from 0.4 to 0.3
-                generate_score * 0.50 +    # Increased from 0.4 to 0.5
-                image_score * 0.20         # Images remain bonus
+                retrieve_score * 0.30 +  
+                generate_score * 0.50 +   
+                image_score * 0.20         
             )
             
             # Classification with new realistic thresholds
@@ -1406,7 +1406,6 @@ class SwimmingUltraAssistant:
             st.session_state.show_images = True
     
     def load_data(self):
-        """PROBLÈME 4 CORRIGÉ: Load data with persistent status"""
         try:
             # Possible paths with priorities
             base_paths = ["output1", "output", "data", "."]
@@ -1573,7 +1572,7 @@ COACHING INSTRUCTIONS:
 EXPERT RESPONSE:"""
     
     def extract_images_with_ai_descriptions(self, search_results: List[Dict]) -> List[Dict]:
-        """PROBLÈME 2 CORRIGÉ: Extract images with priority and fallbacks"""
+      
         images = []
         seen_images = set()
         
@@ -1603,7 +1602,7 @@ EXPERT RESPONSE:"""
             logger.error("❌ No image directory found")
             return []
         
-        # PROBLÈME 2: Extract images with priority for chunks that have them
+  
         for result in search_results:
             result_images = result.get('images', [])
             if result_images:  # Prioritize results that have images
