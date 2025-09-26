@@ -3926,12 +3926,15 @@ Focus on the provided documentation and ensure all advice is practical and imple
     def get_api_key(self) -> Optional[str]:
         """Get API key with caching"""
         try:
-            return st.secrets["GROK_API_KEY"]
-        except:
-            api_key = os.environ.get('GROK_API_KEY')
-            if not api_key:
-                logger.error("Grok API key not found")
+            api_key = st.secrets["GROK"]["api_key"].strip()
             return api_key
+        except KeyError:
+            api_key = os.environ.get('GROK_API_KEY')
+            if api_key:
+                return api_key.strip()
+            else:
+                logger.error("Grok API key not found")
+                return None
     
     def generate_response(self, prompt: str) -> str:
         """Generate response with enhanced error handling"""
@@ -3968,23 +3971,27 @@ Focus on the provided documentation and ensure all advice is practical and imple
                 if response.status_code == 200:
                     result = response.json()
                     return result['choices'][0]['message']['content']
-                else:
-                    logger.warning(f"API error {response.status_code}, attempt {attempt + 1}")
-                    if attempt == self.config.max_retries - 1:
-                        return f"I'm experiencing technical difficulties (API Error {response.status_code}). Please try again."
                     
+                if response.status_code == 401:
+                    logger.error("Grok API key rejected (401 Unauthorized). Check your key!")
+                    return "Authentication failed. Please check your API key."
+            
+                logger.warning(f"API error {response.status_code}, attempt {attempt + 1}")
+                if attempt == self.config.max_retries - 1:
+                    return f"I'm experiencing technical difficulties (API Error {response.status_code}). Please try again."
+            
             except requests.exceptions.Timeout:
                 if attempt == self.config.max_retries - 1:
                     return "The system is experiencing high load. Please try a shorter question."
-                    
+                
             except Exception as e:
                 logger.error(f"Generation error attempt {attempt + 1}: {e}")
                 if attempt == self.config.max_retries - 1:
                     return "Technical error occurred. Please try again."
-            
-            # Exponential backoff
-            time.sleep(1 * (attempt + 1))
         
+            # Exponential backoff
+            time.sleep(2 ** attempt)
+    
         return "Unable to generate response. Please try again."
     
     def build_prompt(self, query: str, search_results: List[Dict]) -> str:
