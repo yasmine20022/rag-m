@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master, devops-autopilot/**]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        env:
+          CI: "true"
+          DATABASE_URL: "sqlite:///./test.db"
+          DEBUG: "false"
+          PYTHONPATH: "."
+          SECRET_KEY: "test-secret-key-for-ci-only"
+          TESTING: "true"
+        run: |
+          pip install -r requirements.txt
+          pip install pytest tests/ -v-cov pytest-asyncio
+
+      - name: Run tests
+        run: pytest tests/ -v
